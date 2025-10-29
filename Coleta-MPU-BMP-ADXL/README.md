@@ -1,62 +1,115 @@
-# 🛰️ Coleta-MPU-BMP-ADXL – Aquisição e Análise de Dados Multissensor
+# 🛰️ Coleta-MPU-BMP-ADXL – Aquisição e Análise de Movimento Multissensor
 
-Esta pasta reúne os códigos e arquivos de teste utilizados para a **coleta, conversão e análise dos dados de múltiplos sensores** conectados ao ESP32.  
-O sistema combina informações do **MPU-6050**, **BMP (sensor barométrico)** e **ADXL (acelerômetro externo)** para permitir uma caracterização mais completa do movimento e do comportamento dinâmico do corpo de prova.
+Esta pasta reúne os códigos e dados utilizados na **aquisição e análise de movimento utilizando múltiplos sensores inerciais e barométricos** conectados ao **ESP32**.  
+O objetivo é capturar com alta precisão o comportamento dinâmico de um corpo em movimento, realizando fusão sensorial e reconstrução da trajetória por meio de técnicas de processamento digital de sinais e orientação espacial.
 
 ---
 
-## 📜 Arquivos disponíveis
+## ⚙️ Arquitetura do Sistema
+
+O sistema é composto por três sensores principais e um módulo de armazenamento, todos integrados ao **ESP32**:
+
+| Componente | Função principal | Interface | Observações |
+|-------------|------------------|------------|--------------|
+| **MPU-6050** | Acelerômetro + Giroscópio com DMP | I²C | Fornece aceleração linear e velocidade angular.|
+| **ADXL (ex: ADXL345)** | Acelerômetro externo auxiliar | I²C | Usado para validação cruzada e comparação com o MPU-6050, aumentando a confiabilidade da medição. |
+| **BMP (ex: BMP180 / BMP280)** | Sensor barométrico | I²C | Mede pressão atmosférica e temperatura para estimar variações de altitude. |
+| **Cartão SD** | Armazenamento local de dados | SPI | Armazena os dados brutos em formato binário (`.bin`), permitindo coletas longas e de alta taxa sem perda de informação. |
+
+A taxa de amostragem é mantida em **200 Hz**, garantindo boa resolução temporal para estudos dinâmicos de curta duração.
+
+---
+
+## 🧩 Descrição dos Arquivos
 
 | Arquivo | Linguagem | Descrição |
 |----------|------------|-----------|
-| **`Coleta-ESP32.ino`** | C++ (Arduino) | Código principal embarcado no ESP32. Realiza a leitura dos sensores MPU-6050, BMP e ADXL via comunicação **I2C**, grava os dados em cartão SD via **SPI**, e pode enviar as leituras em tempo real pela **serial** ou exibir gráficos simples. Opera a uma taxa de atualização de **200 Hz**. |
-| **`Coleta-Serial-CSV.py`** | Python | Recebe os dados transmitidos pela serial (modo de transmissão direta do ESP32) e salva em um arquivo `.csv` para posterior análise. |
-| **`Grafico-verificação.py`** | Python | Script simples e rápido para verificar a integridade das coletas gravadas. Permite uma visualização inicial dos dados antes da análise completa. |
-| **`TCC-BIN-CSV.py`** | Python | Converte arquivos `.bin` (coletas salvas em formato binário pelo ESP32) para `.csv`, tornando-os compatíveis com os scripts de análise. |
-| **`Análise-de-movimento.py`** | Python | Realiza a análise completa do movimento do corpo, aplicando técnicas avançadas de **processamento de sinais e fusão sensorial**: filtros FIR e IIR, interpolação cúbica, algoritmos AHRS, filtros complementares, uso de quatérnions, correção de orientação e integração numérica (método dos trapézios), entre outros. |
-| **Arquivos `.csv`** | Dados | Coletas de teste nomeadas conforme a situação experimental (ex: sensor parado, movimento linear, rotação, etc.). Servem como base para validação e comparação dos algoritmos. |
+| **`Coleta-ESP32.ino`** | C++ (Arduino) | Código embarcado no ESP32. Realiza leitura simultânea dos sensores via I²C, armazena os dados no cartão SD (formato `.bin`), e opcionalmente transmite os valores pela serial. O código controla a taxa de amostragem em **200 Hz** e sincroniza as leituras para minimizar jitter. |
+| **`Coleta-Serial-CSV.py`** | Python | Recebe os dados transmitidos pela serial e grava em arquivo `.csv`. Ideal para coletas curtas e depuração em tempo real. Inclui verificação de integridade de pacotes e registro de tempo. |
+| **`TCC-BIN-CSV.py`** | Python | Converte os arquivos `.bin` gravados no SD para `.csv`, permitindo análise direta em Python. A estrutura de dados segue o formato `[tempo, ax, ay, az, gx, gy, gz, pressão, temperatura, ax_aux, ay_aux, az_aux]`. |
+| **`Grafico-verificação.py`** | Python | Script leve que permite visualizar rapidamente os sinais coletados (aceleração, giroscópio, pressão, etc.) para confirmar se a coleta foi bem-sucedida. |
+| **`Análise-de-movimento.py`** | Python | Realiza a análise avançada dos dados aplicando técnicas de processamento de sinais e fusão sensorial. Este é o script principal de análise. |
 
 ---
 
-## 🧩 Fluxo geral de funcionamento
+## 🧠 Principais Técnicas de Processamento
 
-1. **Coleta:** o ESP32 lê os dados brutos dos sensores via I2C e os grava no cartão SD (formato `.bin`) ou envia diretamente pela serial.  
-2. **Conversão:** o script `TCC-BIN-CSV.py` converte os arquivos binários em `.csv`.  
-3. **Verificação:** o script `Grafico-verificação.py` é usado para inspecionar rapidamente os dados coletados.  
-4. **Análise completa:** o `Análise-de-movimento.py` aplica os filtros, fusões e integrações para reconstruir a trajetória e estimar o comportamento dinâmico.  
+O código **`Análise-de-movimento.py`** utiliza uma série de algoritmos e métodos para reconstruir o movimento e corrigir erros inerentes aos sensores:
+
+### 🔹 1. Pré-processamento
+- Remoção de offset e normalização de unidades.  
+- Correção de drift de giroscópio.  
+- Interpolação cúbica dos dados para garantir espaçamento temporal uniforme.  
+
+### 🔹 2. Filtragem
+- **Filtros FIR e IIR** (Butterworth, FIR HP, etc.) para remoção de ruído.  
+- Comparação entre abordagens **causais** e **não causais** (`lfilter` vs `filtfilt`).  
+
+### 🔹 3. Fusão Sensorial e Orientação
+- Implementação de algoritmos **AHRS (Attitude and Heading Reference System)** como **Madgwick** e **Mahony**.  
+- Filtro complementar para fusão entre aceleração e giroscópio.  
+- Representação da orientação em **quatérnios** e conversão para ângulos de Euler (roll, pitch, yaw).  
+
+### 🔹 4. Correção de Orientação
+- Ajuste de quadros de referência utilizando as estimativas de atitude.  
+- Projeção da aceleração linear no eixo global para eliminação do componente gravitacional.  
+
+### 🔹 5. Integração Numérica
+- Cálculo de velocidade e deslocamento via **integração trapezoidal**.  
+- Aplicação de técnicas de **remoção de tendência** para minimizar erro acumulado por ZUTP.  
+
+### 🔹 6. Visualização e Interpretação
+- Geração de gráficos no domínio do tempo e frequência.  
+- Comparação entre sensores (MPU × ADXL).  
+- Análise de altitude.
 
 ---
 
-## ⚙️ Sensores e Comunicação
+## 🧰 Estrutura dos Dados
 
-| Sensor | Função | Protocolo |
-|--------|---------|-----------|
-| **MPU-6050** | Acelerômetro + Giroscópio | I2C |
-| **BMP (Barômetro)** | Medição de pressão e altitude | I2C |
-| **ADXL** | Acelerômetro externo auxiliar | I2C |
-| **Cartão SD** | Armazenamento de dados | SPI |
+Os dados armazenados (em `.bin` e `.csv`) seguem o formato:
 
----
-
-## 💡 Observações
-
-- A taxa de amostragem de **200 Hz** foi escolhida para equilibrar precisão temporal e estabilidade de gravação.  
-- Os algoritmos de fusão (AHRS, filtros complementares e quatérnions) são fundamentais para corrigir deriva e alinhar referências.  
-- Todos os scripts Python foram escritos com foco na clareza e modularidade, permitindo fácil adaptação a novos sensores e formatos de dados.
+| Coluna | Unidade | Descrição |
+|---------|----------|-----------|
+| **Tempo** | segundos | Marca temporal de cada amostra. |
+| **Ax, Ay, Az** | m/s² | Aceleração medida pelo MPU-6050. |
+| **Gx, Gy, Gz** | °/s | Velocidade angular do MPU-6050. |
+| **Altitude** | M | Leitura do BMP. |
+| **Ax_aux, Ay_aux, Az_aux** | m/s² | Aceleração medida pelo ADXL. |
 
 ---
 
-## 📊 Próximos passos
+## ⚙️ Fluxo de Operação
 
-- Comparar o desempenho dos diferentes métodos de fusão sensorial.  
-- Integrar o módulo GPS para análise de trajetória absoluta.  
-- Validar os resultados experimentais com medições reais em campo.  
-- Implementar visualização 3D interativa da orientação do corpo.
+1. **Coleta:** o ESP32 lê todos os sensores a 200 Hz e grava em formato binário (`.bin`) no cartão SD.  
+2. **Conversão:** o script `TCC-BIN-CSV.py` transforma o arquivo em `.csv`.  
+3. **Verificação:** `Grafico-verificação.py` é usado para inspecionar rapidamente os sinais coletados.  
+4. **Análise:** `Análise-de-movimento.py` aplica filtros, fusões, correções e integrações, gerando gráficos e resultados quantitativos.
+
+---
+
+## 📊 Exemplos de Resultados
+
+- Gráficos de aceleração e velocidade angular.  
+- Curvas de altitude em função da pressão.  
+- Comparações entre sensores MPU e ADXL.  
+- Estimativas de deslocamento e orientação espacial.
+
+*(Os exemplos e gráficos gerados podem ser encontrados nos notebooks e scripts de análise.)*
+
+---
+
+## 💡 Observações Importantes
+
+- O sistema foi projetado para capturar movimentos rápidos de curta duração (ex: trajetória de um foguete de garrafa PET).  
+- Pequenas variações de sincronismo entre sensores são corrigidas via interpolação temporal.  
+- O formato binário foi escolhido para minimizar latência e maximizar desempenho na escrita em SD.  
+- O código foi testado em diferentes taxas de amostragem, sendo **200 Hz** o ponto ótimo entre estabilidade e resolução.  
 
 ---
 
 ## 👤 Autor
 
 **Luis Felipe Pereira Ramos**  
-Desenvolvido como parte do Trabalho de Conclusão de Curso (TCC).  
-Técnico em Automação Industrial – Instituto Federal do Mato Grosso (IFMT)
+Técnico em Automação Industrial – IFMT  
+Desenvolvido como parte do Trabalho de Conclusão de Curso (TCC).
