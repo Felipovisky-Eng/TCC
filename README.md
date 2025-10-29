@@ -20,12 +20,31 @@ Cada pasta contém seus próprios códigos e um arquivo `README.md` explicando e
 
 ## ⚙️ Tecnologias Utilizadas
 
-- **ESP32** – microcontrolador responsável pela coleta de dados dos sensores.  
-- **MPU-6050** – sensor de aceleração e giroscópio com DMP integrada.  
-- **Python** – usado para comunicação serial, armazenamento de dados e processamento numérico.  
-- **Bibliotecas principais:**  
-  - `Wire.h`, `MPU6050_6Axis_MotionApps20.h` (C++)  
-  - `pyserial`, `numpy`, `matplotlib`, `pandas`, `scipy` (Python)
+- **ESP32** – microcontrolador principal responsável pela coleta, armazenamento e transmissão de dados.  
+- **MPU-6050** – sensor inercial de aceleração e velocidade angular, com DMP integrada.  
+- **ADXL (Acelerômetro externo)** – utilizado como sensor auxiliar para redundância e validação das leituras de aceleração.  
+- **BMP (Sensor barométrico)** – fornece medições de pressão e altitude para complementar a estimativa de posição e movimento.  
+- **Cartão SD** – usado para registro local das coletas de dados em formato binário.  
+- **Python** – linguagem utilizada para comunicação serial, conversão de arquivos, análise de sinais e visualização gráfica dos resultados.  
+
+**Bibliotecas principais:**
+
+- **C++ / Arduino:**  
+  - `Wire.h` – comunicação I²C entre ESP32 e sensores.  
+  - `SPI.h` – comunicação com o módulo de cartão SD.  
+  - `SD.h` – gravação e leitura de arquivos no cartão SD.  
+  - `MPU6050_6Axis_MotionApps20.h` – leitura e processamento da DMP do MPU-6050.  
+  - `Adafruit_BMP085.h` ou `Adafruit_BMP280.h` – leitura do sensor barométrico.  
+  - `Adafruit_ADXL345_U.h` – leitura do acelerômetro ADXL.  
+
+- **Python:**  
+  - `pyserial` – recepção de dados via porta serial.  
+  - `numpy` – processamento numérico e vetorial.  
+  - `pandas` – manipulação de dados tabulares (arquivos `.csv`).  
+  - `matplotlib` – geração de gráficos e visualizações.  
+  - `scipy` – filtros digitais, interpolação e integração numérica.  
+  - `ahrs` – algoritmos de orientação e fusão sensorial (Madgwick, Mahony, etc.).  
+
 
 ---
 
