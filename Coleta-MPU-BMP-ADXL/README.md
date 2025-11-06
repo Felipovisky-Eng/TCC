@@ -29,6 +29,8 @@ A taxa de amostragem é mantida em **200 Hz**, garantindo boa resolução tempor
 | **`TCC-BIN-CSV.py`** | Python | Converte os arquivos `.bin` gravados no SD para `.csv`, permitindo análise direta em Python. A estrutura de dados segue o formato `[tempo, ax, ay, az, gx, gy, gz, pressão, temperatura, ax_aux, ay_aux, az_aux]`. |
 | **`Grafico-verificação.py`** | Python | Script leve que permite visualizar rapidamente os sinais coletados (aceleração, giroscópio, pressão, etc.) para confirmar se a coleta foi bem-sucedida. |
 | **`Análise-de-movimento.py`** | Python | Realiza a análise avançada dos dados aplicando técnicas de processamento de sinais e fusão sensorial. Este é o script principal de análise. |
+| **`Coletas`** | `.csv` | Arquivos de testes no formato `.csv` e `.bin.`, utilize eles no código **`Análise-de-movimento.py`** |
+
 
 ---
 
