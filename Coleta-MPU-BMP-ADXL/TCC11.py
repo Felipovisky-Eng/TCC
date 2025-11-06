@@ -1,4 +1,4 @@
-#Código preliminar para o TCC (Sim, tiveram 10 antes desse, um pouca mias na realidade)
+#Código preliminar para o TCC (Sim, tiveram 10 antes desse, um pouca mais na realidade)
 
 """
 Módulo 1 + 2: Seleção de arquivo CSV e pré-processamento
@@ -1407,6 +1407,7 @@ visualizar_trajetoria_3d_interativa(
     time_s_interp, accel_final, vel_final, disp_final,
     exibir_resumo=True, quiver_step=5
 )
+
 
 
 
