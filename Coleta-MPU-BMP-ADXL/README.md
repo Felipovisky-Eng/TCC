@@ -104,7 +104,8 @@ Os dados armazenados (em `.bin` e `.csv`) seguem o formato:
 - O sistema foi projetado para capturar movimentos rápidos de curta duração (ex: trajetória de um foguete de garrafa PET).  
 - Pequenas variações de sincronismo entre sensores são corrigidas via interpolação temporal.  
 - O formato binário foi escolhido para minimizar latência e maximizar desempenho na escrita em SD.  
-- O código foi testado em diferentes taxas de amostragem, sendo **200 Hz** o ponto ótimo entre estabilidade e resolução.  
+- O código foi testado em diferentes taxas de amostragem, sendo **200 Hz** o ponto ótimo entre estabilidade e resolução.
+- Os arquivos `.csv` e `.bin` estão disponibilizados na pasta Coletas  
 
 ---
 
