@@ -14,7 +14,7 @@ Cada pasta contém seus próprios códigos e um arquivo `README.md` explicando e
 | Pasta | Descrição |
 |-------|------------|
 | **ESP32-DMP/** | Códigos relacionados à leitura de dados da DMP (Digital Motion Processor) do MPU-6050 utilizando o ESP32, além dos scripts Python para receber, salvar e analisar os dados. |
-| *Coleta-MPU-BMP-ADXL/* | Outras pastas poderão ser adicionadas explorando filtros digitais, GPS, fusão sensorial, entre outros módulos do sistema. |
+| **Coleta-MPU-BMP-ADXL/** | Códigos relacionados a coleta de dados brutos do MPU-6050, além dos scipts Python para receber e analisa dados . |
 
 ---
 
