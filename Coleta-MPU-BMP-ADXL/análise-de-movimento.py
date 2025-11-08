@@ -542,8 +542,8 @@ from scipy.signal import butter, filtfilt, firwin
 def filtrar_dados(time_s, FS, FS_novo, mpu_accel, mpu_gyro, adxl_accel, altitude_proc, ativar=True):
     """
     Aplica filtros nos dados do MPU e ADXL:
-    - IIR Butter PB 2ª ordem, fc = 25 Hz (todos)
-    - FIR PA 0,5 Hz ordem 101 (apenas MPU gyro)
+    - IIR Butter PB 2ª ordem, fc = 80 Hz (todos)
+    - FIR PA 0,25 Hz ordem 101 (apenas MPU gyro)
     """
 
     if not ativar:
@@ -556,8 +556,8 @@ def filtrar_dados(time_s, FS, FS_novo, mpu_accel, mpu_gyro, adxl_accel, altitude
     Wn = fc_pb / nyq
     b, a = butter(2, Wn, btype='low')
 
-    # --- IIR Butter PB 6Hz --- BMP ---
-    fc_pb = 6
+    # --- IIR Butter PB 10Hz --- BMP ---
+    fc_pb = 10
     nyq_bmp = 0.5 * FS
     Wn_bmp = fc_pb / nyq_bmp
     b_bmp, a_bmp = butter(4, Wn_bmp, btype='low')
@@ -1627,4 +1627,5 @@ accel_final, vel_final, disp_final = integrar_deslocamento_bmp(
     acc_corrigida_adxl, vel_final, disp_final,
     accel_z_bmp, vel_z_bmp, desloc_z_bmp,
     time_s_interp, mask_zupt
+
 )
