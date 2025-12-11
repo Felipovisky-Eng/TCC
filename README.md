@@ -70,5 +70,6 @@ Projeto desenvolvido como parte do Trabalho de Conclusão de Curso (TCC).
 
 ## 🧾 Licença
 
-Este projeto é de uso acadêmico e livre para consulta.  
-O uso ou modificação dos códigos é permitido mediante **citação do autor e do repositório original**.
+
+Este projeto é distribuído sob a licença MIT. Consulte o arquivo [LICENSE](./LICENSE) para mais detalhes.
+
